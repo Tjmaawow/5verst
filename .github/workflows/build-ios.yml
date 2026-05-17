@@ -23,6 +23,9 @@ jobs:
       - name: Prebuild
         run: npx expo prebuild --platform ios --clean
 
+      - name: Copy ExportOptions
+        run: cp ExportOptions.plist ios/ExportOptions.plist
+
       - name: Install Pods
         run: cd ios && pod install
 
