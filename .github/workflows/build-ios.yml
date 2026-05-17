@@ -7,27 +7,45 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      - name: Install CocoaPods
+        run: sudo gem install cocoapods
 
       - name: Prebuild
-        run: npx expo prebuild --platform ios
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Install Pods
+        run: cd ios && pod install
 
       - name: Build iOS
-        run: xcodebuild -workspace ios/5verst.xcworkspace -scheme 5verst -configuration Release -archivePath ios/5verst.xcarchive archive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        run: |
+          xcodebuild \
+            -workspace ios/5verst.xcworkspace \
+            -scheme 5verst \
+            -configuration Release \
+            -archivePath ios/5verst.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ENABLE_BITCODE=NO
 
       - name: Export IPA
-        run: xcodebuild -exportArchive -archivePath ios/5verst.xcarchive -exportPath ios/output -exportOptionsPlist ios/ExportOptions.plist
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath ios/5verst.xcarchive \
+            -exportPath ios/output \
+            -exportOptionsPlist ios/ExportOptions.plist
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
