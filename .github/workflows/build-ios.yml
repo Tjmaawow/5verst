@@ -1,0 +1,36 @@
+name: Build iOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Prebuild
+        run: npx expo prebuild --platform ios
+
+      - name: Build iOS
+        run: xcodebuild -workspace ios/5verst.xcworkspace -scheme 5verst -configuration Release -archivePath ios/5verst.xcarchive archive CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Export IPA
+        run: xcodebuild -exportArchive -archivePath ios/5verst.xcarchive -exportPath ios/output -exportOptionsPlist ios/ExportOptions.plist
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-ios
+          path: ios/output/*.ipa
